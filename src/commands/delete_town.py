@@ -1,22 +1,32 @@
 from discord.ext import commands
 import discord
 
-def setup(bot):
-    @bot.command()
-    async def delete_town(ctx, *, nombre_pueblo):
-        guild = ctx.guild
-        categorias = [nombre_pueblo, f"{nombre_pueblo} - Noche"]
-        encontrado = False
+async def delete_town(ctx, town_name):
+    guild = ctx.guild
+    bot_member = guild.me
 
-        for name in categorias:
-            category = discord.utils.get(guild.categories, name=name)
-            if category:
-                for channel in category.channels:
-                    await channel.delete()
+    category_names = [town_name, f"{town_name} - Noche"]
+    deleted_any = False
+
+    for name in category_names:
+        category = discord.utils.get(guild.categories, name=name)
+        if category:
+            for channel in category.channels:
+                perms = channel.permissions_for(bot_member)
+                if perms.manage_channels:
+                    try:
+                        await channel.delete()
+                    except discord.Forbidden:
+                        await ctx.send(f"❌ No tengo permiso para eliminar el canal: `{channel.name}`.")
+                else:
+                    await ctx.send(f"⚠️ No tengo permisos suficientes para eliminar `{channel.name}`.")
+            try:
                 await category.delete()
-                encontrado = True
+                deleted_any = True
+            except discord.Forbidden:
+                await ctx.send(f"❌ No tengo permiso para eliminar la categoría `{category.name}`.")
 
-        if encontrado:
-            await ctx.send(f"🧹 Pueblo `{nombre_pueblo}` eliminado.")
-        else:
-            await ctx.send(f"No encontré ninguna categoría llamada `{nombre_pueblo}`.")
+    if deleted_any:
+        await ctx.send(f"🧹 El pueblo `{town_name}` ha sido eliminado.")
+    else:
+        await ctx.send(f"⚠️ No se encontró ninguna categoría llamada `{town_name}` o `{town_name} - Noche`, o no tengo acceso.")

@@ -1,28 +1,35 @@
-# 🤙 Clockmaker Bot
+# 🧙 ClockmakerBot
 
-Un bot de Discord en Python para organizar partidas de **Blood on the Clocktower** con soporte para Clocktower.online.
+Bot de Discord para asistir a partidas de **Blood on the Clocktower**, gestionado desde interfaz con botones y modales.  
+Compatible con [Clocktower.online](https://clocktower.online).
 
 ---
 
 ## 🚀 Requisitos
 
-- Python 3.8+
+- Python 3.10 o superior ✅
 - `pip`
-- Cuenta de Discord
-- Permisos para gestionar un servidor de Discord
+- Acceso a un servidor de Discord donde tengas permisos para gestionar canales y roles
 
 ---
 
-## 🛠 Instalación
+## 🔧 Instalación
 
-1. Clona este repositorio o descárgalo como `.zip`.
+1. Clona este repositorio:
 
 ```bash
-git clone https://github.com/stardusther/bloodtownbot.git
-cd bloodtownbot
+git clone https://github.com/stardusther/ClockmakerBot.git
+cd ClockmakerBot
 ```
 
-2. Instala las dependencias (usa un entorno virtual si quieres):
+2. Crea un entorno virtual (recomendado):
+
+```bash
+python3.10 -m venv venv
+source venv/bin/activate  # o `source venv/bin/activate.fish` si usas fish shell
+```
+
+3. Instala las dependencias:
 
 ```bash
 pip install -r requirements.txt
@@ -30,26 +37,21 @@ pip install -r requirements.txt
 
 ---
 
-## 🔐 Cómo obtener y configurar tu token de bot
+## 🔐 Configuración del Token
 
-1. Ve a [Discord Developer Portal](https://discord.com/developers/applications) y haz clic en **New Application**.
-2. Nómbralo (por ejemplo: `BloodTownBot`), luego ve a **Bot** → **Add Bot**.
-3. En **Bot > Token**, haz clic en **Reset Token** y cópialo.
-4. En **Bot > Privileged Gateway Intents**, activa:
-   - ✅ `MESSAGE CONTENT INTENT`
-   - ✅ `SERVER MEMBERS INTENT`
+1. Ve al [Discord Developer Portal](https://discord.com/developers/applications)
+2. Crea una nueva aplicación y agrega un **bot**
+3. Copia el token y pégalo en un archivo `.env` así:
 
-5. En tu máquina, crea un archivo `.env` con este contenido:
-
-```env
-DISCORD_BOT_TOKEN=tu_token_pegado_aquí
+```
+DISCORD_BOT_TOKEN=tu_token_aquí
 ```
 
-**⚠️ Nunca compartas este token. Es tu clave privada.**
+⚠️ ¡Nunca subas este archivo a GitHub!
 
 ---
 
-## 🥪 Uso
+## ▶️ Uso
 
 1. Ejecuta el bot:
 
@@ -57,33 +59,40 @@ DISCORD_BOT_TOKEN=tu_token_pegado_aquí
 python bot.py
 ```
 
-2. En tu servidor de Discord (donde hayas invitado al bot):
+2. En tu servidor, usa:
 
 ```bash
-!create_town VillaRosa
+!start
 ```
 
-3. Los jugadores podrán unirse con un botón, y tú puedes iniciar la partida con:
+Aparecerá una **interfaz visual** con botones para:
 
-```bash
-!start_game VillaRosa
-```
+- Crear Pueblo
+- Eliminar Pueblo
+- Comenzar Partida
+- Ajustes
 
 ---
 
-## 🧼 Comandos disponibles
+## 🧼 Comandos internos
 
-| Comando                  | Descripción                                        |
-|--------------------------|----------------------------------------------------|
-| `!crear_pueblo <nombre>` | Crea roles y canales temáticos para un pueblo      |
-| `!start_game <nombre>`   | Inicia la partida y muestra botón para iniciar noche |
-| `!delete_town <nombre>`  | Elimina todas las categorías y canales del pueblo |
+| Acción              | Se activa desde la interfaz        |
+|---------------------|------------------------------------|
+| Crear pueblo        | Modal que pide el nombre del pueblo |
+| Eliminar pueblo     | Modal de confirmación              |
+| Comenzar partida    | Habilita el botón de "Noche"       |
+| Mover jugadores     | Al pulsar "🌙 Noche" los lleva a cabañas |
+
+---
+
+## 📦 Dependencias
+
+- `discord.py` (v2.5.2 o superior)
+- `python-dotenv`
 
 ---
 
 ## 🤝 Créditos
 
-Hecho con amor por Esther García para facilitar partidas de **Blood on the Clocktower**.  
+Hecho por Esther García para facilitar partidas de **Blood on the Clocktower**.  
 Apoya el juego original en: https://bloodontheclocktower.com/
-
----

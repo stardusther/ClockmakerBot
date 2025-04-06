@@ -1,3 +1,5 @@
+import discord
+
 async def ensure_role(guild, role_name, ctx=None):
     role = discord.utils.get(guild.roles, name=role_name)
     if not role:
