@@ -1,2 +1,2 @@
 # ClockmakerBot
-A discord bot to manage 
+A Blood on the Clocktower discord bot to manage online games 
