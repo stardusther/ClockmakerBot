@@ -1,0 +1,18 @@
+# Add files and folders for git to ignore
+# Entornos virtuales
+venv/
+.env
+.env.*
+
+# Archivos de Python
+__pycache__/
+*.pyc
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración personal
+*.code-workspace
+.idea/
+.vscode/

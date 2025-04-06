@@ -1,0 +1,5 @@
+# Add your requirements here
+
+py-cord
+python-dotenv
+
