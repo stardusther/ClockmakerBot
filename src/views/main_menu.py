@@ -27,14 +27,9 @@ class MainMenuView(View):
             return await self.deny_access(interaction)
         await interaction.response.send_modal(DeleteTownModal())
 
-    @button(label="🧙 Comenzar Partida", style=discord.ButtonStyle.primary)
-    async def start_game_button(self, interaction, button):
-        if not self.is_storyteller(interaction.user):
-            return await self.deny_access(interaction)
-        await interaction.response.send_modal(StartGameModal())
 
-    @button(label="⚙️ Ajustes", style=discord.ButtonStyle.secondary)
-    async def settings_button(self, interaction, button):
-        if not self.is_storyteller(interaction.user):
-            return await self.deny_access(interaction)
-        await interaction.response.send_message("🔧 Función de ajustes aún no implementada.", ephemeral=True)
+    # @button(label="⚙️ Ajustes generales del bot", style=discord.ButtonStyle.secondary)
+    # async def settings_button(self, interaction, button):
+    #     if not self.is_storyteller(interaction.user):
+    #         return await self.deny_access(interaction)
+    #     await interaction.response.send_message("🔧 Función de ajustes aún no implementada.", ephemeral=True)
