@@ -3,6 +3,15 @@
 Bot de Discord para asistir a partidas de **Blood on the Clocktower**, gestionado desde interfaz con botones y modales.  
 Compatible con [Clocktower.online](https://clocktower.online).
 
+## 🤖 Invitación del bot
+
+Para invitar el bot a tu servidor con todos los permisos necesarios (gestionar canales, mover usuarios, gestionar roles, etc.), usa el siguiente enlace:
+
+👉 [Invitar a The Clockmaker](https://discord.com/oauth2/authorize?client_id=1358515367953170695&scope=bot+applications.commands&permissions=286329872)
+
+> Este enlace otorga los permisos mínimos requeridos por el bot. Si prefieres configurar los permisos manualmente, puedes hacerlo en el panel de Discord Developer Portal.
+
+
 ---
 
 ## 🚀 Requisitos

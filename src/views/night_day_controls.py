@@ -68,6 +68,6 @@ class NightDayControlView(View):
                 continue
 
         if interaction.response.is_done():
-            await interaction.followup.send(f"✅ {moved} jugadores han sido movidos.", delete_after=5)
-        else:
-            await interaction.response.send_message(f"✅ {moved} jugadores han sido movidos.", delete_after=5)
+            await interaction.channel.send(f"✅ {moved} jugadores han sido movidos.", delete_after=5)
+        # else:
+        #     await interaction.response.send_message(f"✅ {moved} jugadores han sido movidos.", delete_after=5)
