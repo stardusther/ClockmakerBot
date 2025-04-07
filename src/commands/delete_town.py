@@ -1,9 +1,12 @@
 from discord.ext import commands
 import discord
 
-async def delete_town(ctx, town_name):
-    guild = ctx.guild
+async def delete_town(interaction, town_name):
+    guild = interaction.guild
     bot_member = guild.me
+
+    # ⚠️ Responder de forma diferida para evitar timeout
+    await interaction.response.defer(ephemeral=True)
 
     category_names = [town_name, f"{town_name} - Noche"]
     deleted_any = False
@@ -17,16 +20,16 @@ async def delete_town(ctx, town_name):
                     try:
                         await channel.delete()
                     except discord.Forbidden:
-                        await ctx.send(f"❌ No tengo permiso para eliminar el canal: `{channel.name}`.")
+                        await interaction.followup.send(f"❌ No tengo permiso para eliminar el canal: `{channel.name}`.", ephemeral=True)
                 else:
-                    await ctx.send(f"⚠️ No tengo permisos suficientes para eliminar `{channel.name}`.")
+                    await interaction.followup.send(f"⚠️ No tengo permisos suficientes para eliminar `{channel.name}`.", ephemeral=True)
             try:
                 await category.delete()
                 deleted_any = True
             except discord.Forbidden:
-                await ctx.send(f"❌ No tengo permiso para eliminar la categoría `{category.name}`.")
+                await interaction.followup.send(f"❌ No tengo permiso para eliminar la categoría `{category.name}`.", ephemeral=True)
 
     if deleted_any:
-        await ctx.send(f"🧹 El pueblo `{town_name}` ha sido eliminado.")
+        await interaction.followup.send(f"🧹 El pueblo `{town_name}` ha sido eliminado correctamente.", ephemeral=True)
     else:
-        await ctx.send(f"⚠️ No se encontró ninguna categoría llamada `{town_name}` o `{town_name} - Noche`, o no tengo acceso.")
+        await interaction.followup.send(f"⚠️ No encontré ninguna categoría llamada `{town_name}` o no tengo acceso.", ephemeral=True)
