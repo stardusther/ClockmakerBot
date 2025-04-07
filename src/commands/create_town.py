@@ -12,7 +12,7 @@ async def create_town(interaction, town_name):
     author = interaction.user
     bot_member = guild.me
 
-    await interaction.response.defer(ephemeral=True)
+    await interaction.response.defer()
 
     villager_role = await ensure_role(guild, f"Aldeano {town_name}")
     storyteller_role = await ensure_role(guild, f"Narrador {town_name}")
@@ -45,20 +45,19 @@ async def create_town(interaction, town_name):
     config["category_day_id"] = category_day.id
     config["category_night_id"] = category_night.id
 
-    # Canal exclusivo del narrador
     overwrites_narrator = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
         storyteller_role: discord.PermissionOverwrite(view_channel=True, send_messages=True),
         bot_member: bot_overwrite
     }
+
     narrator_channel = await guild.create_text_channel(
         f"sala-narrador-{town_name.lower().replace(' ', '-')}",
         overwrites=overwrites_narrator,
         category=category_day,
-        topic=town_name  # 👈 original town name
+        topic=town_name
     )
 
-    # Canal de texto público para avisos
     overwrites_chat = {
         guild.default_role: discord.PermissionOverwrite(read_messages=False),
         villager_role: discord.PermissionOverwrite(read_messages=True, send_messages=True),
@@ -66,13 +65,8 @@ async def create_town(interaction, town_name):
         bot_member: discord.PermissionOverwrite(view_channel=True, send_messages=True)
     }
 
-    chat_channel = await guild.create_text_channel("chat", overwrites=overwrites_chat,
-                                                   category=category_day)
-
-    # Guardar asociación canal narrador <-> nombre pueblo
+    await guild.create_text_channel("chat", overwrites=overwrites_chat, category=category_day)
     narrator_channel_links[narrator_channel.id] = town_name
-
-    # Canales públicos (voz y texto para aldeanos)
     await guild.create_voice_channel("Plaza del pueblo", category=category_day)
 
     voice_channels = [("Pozo", 2), ("Cementerio", 3), ("Granja", 2), ("Bosque", 2), ("Torre", 3)]
@@ -82,14 +76,16 @@ async def create_town(interaction, town_name):
     for _ in range(20):
         await guild.create_voice_channel("Cabaña", category=category_night)
 
-    # Enviar resumen al narrador
+    # 🎯 Mensaje principal permanente con espaciado
     await narrator_channel.send(
-        f"📜 Pueblo `{town_name}` creado.\n"
-        f"- Roles: ✅ `{villager_role}`, ✅ `{storyteller_role}`\n"
-        f"- Categorías: ✅ {town_name}, ✅ {town_name} - Noche\n"
-        f"- Sala del narrador: este canal.\n\n"
+        f"📜 Pueblo `{town_name}` creado.\n\n"
+        f"🔹 **Roles:**\n"
+        f"  - ✅ `{villager_role.name}`\n"
+        f"  - ✅ `{storyteller_role.name}`\n\n"
+        f"🔹 **Categorías:**\n"
+        f"  - 🗂️ `{town_name}`\n"
+        f"  - 🌙 `{town_name} - Noche`\n\n"
+        f"🔹 **Sala del narrador:** este canal\n\n"
         f"Usa los botones de abajo para continuar:",
         view=NarratorRoomView(town_name)
     )
-
-    await interaction.followup.send(f"✅ Pueblo `{town_name}` creado. Puedes gestionar todo desde tu sala privada.", ephemeral=True)

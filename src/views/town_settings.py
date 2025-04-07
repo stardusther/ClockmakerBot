@@ -16,9 +16,14 @@ class TownSettingsMenu(discord.ui.View):
         )
 
     @discord.ui.button(label="📢 Notificaciones y limpieza", style=discord.ButtonStyle.secondary)
-    async def config_modal_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        from views.configure_town_modal import ConfigureTownModal
-        await interaction.response.send_modal(ConfigureTownModal(self.town_name, interaction.guild))
+    async def config_modal_button(self, interaction: discord.Interaction,
+                                  button: discord.ui.Button):
+        from views.configure_town_view import ConfigureTownView
+        await interaction.response.send_message(
+            "⚙️ Ajustes del pueblo:",
+            view=ConfigureTownView(self.town_name, interaction.guild),
+            ephemeral=True
+        )
 
 
 class CategorySelectView(discord.ui.View):

@@ -1,5 +1,6 @@
 import discord
 from utils.config import get_town_config
+from utils.messages import send_temp_message
 
 async def end_game(interaction: discord.Interaction, town_name: str):
     guild = interaction.guild
@@ -20,18 +21,30 @@ async def end_game(interaction: discord.Interaction, town_name: str):
             await member.remove_roles(*to_remove)
             removed += 1
 
-    # Opcional: eliminar mensaje de unirse a la partida
+    # Eliminar mensaje de unirse si está configurado
     if config.get("delete_join_message_on_end") and "join_message_id" in config:
         try:
             channel = guild.get_channel(config["notifier_channel_id"])
             msg = await channel.fetch_message(config["join_message_id"])
             await msg.delete()
         except:
-            pass  # no importa si falla
+            pass  # no pasa nada si falla
 
-    # Mensaje de notificación al canal configurado
-    target_channel = guild.get_channel(config.get("notifier_channel_id", interaction.channel.id))
-    if target_channel:
-        await target_channel.send(f"🛑 La partida del pueblo `{town_name}` ha finalizado. Se han limpiado los roles de `{removed}` usuarios.")
+    # Canal narrador
+    narrator_channel = discord.utils.get(
+        guild.text_channels,
+        name=f"sala-narrador-{town_name.lower().replace(' ', '-')}"
+    )
 
-    await interaction.response.send_message("✅ Partida terminada.", ephemeral=True)
+    if narrator_channel:
+        await send_temp_message(
+            narrator_channel,
+            f"🛑 La partida del pueblo `{town_name}` ha finalizado.\n"
+            f"Se han limpiado los roles de `{removed}` usuarios.",
+            delay=10
+        )
+
+    # Eliminar config si está activado
+    if config.get("clear_config_on_end"):
+        from utils.config import clear_town_config
+        clear_town_config(town_name)

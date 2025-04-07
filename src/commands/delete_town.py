@@ -1,15 +1,19 @@
-from discord.ext import commands
 import discord
+from utils.messages import send_temp_message
 
 async def delete_town(interaction, town_name):
     guild = interaction.guild
     bot_member = guild.me
 
-    # ⚠️ Responder de forma diferida para evitar timeout
-    await interaction.response.defer(ephemeral=True)
+    await interaction.response.defer()
 
     category_names = [town_name, f"{town_name} - Noche"]
     deleted_any = False
+
+    narrator_channel = discord.utils.get(
+        guild.text_channels,
+        name=f"sala-narrador-{town_name.lower().replace(' ', '-')}"
+    )
 
     for name in category_names:
         category = discord.utils.get(guild.categories, name=name)
@@ -20,16 +24,36 @@ async def delete_town(interaction, town_name):
                     try:
                         await channel.delete()
                     except discord.Forbidden:
-                        await interaction.followup.send(f"❌ No tengo permiso para eliminar el canal: `{channel.name}`.", ephemeral=True)
+                        await send_temp_message(
+                            narrator_channel,
+                            f"❌ No tengo permiso para eliminar el canal: `{channel.name}`.",
+                            delay=10
+                        )
                 else:
-                    await interaction.followup.send(f"⚠️ No tengo permisos suficientes para eliminar `{channel.name}`.", ephemeral=True)
+                    await send_temp_message(
+                        narrator_channel,
+                        f"⚠️ No tengo permisos suficientes para eliminar `{channel.name}`.",
+                        delay=10
+                    )
             try:
                 await category.delete()
                 deleted_any = True
             except discord.Forbidden:
-                await interaction.followup.send(f"❌ No tengo permiso para eliminar la categoría `{category.name}`.", ephemeral=True)
+                await send_temp_message(
+                    narrator_channel,
+                    f"❌ No tengo permiso para eliminar la categoría `{category.name}`.",
+                    delay=10
+                )
 
     if deleted_any:
-        await interaction.followup.send(f"🧹 El pueblo `{town_name}` ha sido eliminado correctamente.", ephemeral=True)
+        await send_temp_message(
+            narrator_channel,
+            f"🧹 El pueblo `{town_name}` ha sido eliminado correctamente.",
+            delay=10
+        )
     else:
-        await interaction.followup.send(f"⚠️ No encontré ninguna categoría llamada `{town_name}` o no tengo acceso.", ephemeral=True)
+        await send_temp_message(
+            narrator_channel,
+            f"⚠️ No encontré ninguna categoría llamada `{town_name}` o no tengo acceso.",
+            delay=10
+        )
