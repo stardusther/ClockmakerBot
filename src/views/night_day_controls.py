@@ -29,17 +29,17 @@ class NightDayControlView(View):
         category = guild.get_channel(category_id)
 
         if not isinstance(category, discord.CategoryChannel):
-            await interaction.response.send_message("❌ No se pudo acceder a la categoría correspondiente.", ephemeral=True)
+            await interaction.response.send_message("❌ No se pudo acceder a la categoría correspondiente.", delete_after=5)
             return
 
         villager_role = discord.utils.get(guild.roles, name=f"Aldeano {self.town_name}")
         if not villager_role:
-            await interaction.response.send_message("❌ Rol de aldeanos no encontrado.", ephemeral=True)
+            await interaction.response.send_message("❌ Rol de aldeanos no encontrado.", delete_after=5)
             return
 
         players = get_voice_members_with_role(guild, villager_role)
         if not players:
-            await interaction.response.send_message("⚠️ No hay jugadores conectados a voz.", ephemeral=True)
+            await interaction.response.send_message("⚠️ No hay jugadores conectados a voz.", delete_after=5)
             return
 
         plaza = discord.utils.get(category.voice_channels, name="Plaza del pueblo")
@@ -54,7 +54,7 @@ class NightDayControlView(View):
             else:
                 await chat_channel.send(f"☀️ {villager_role.mention} Buenos días. Os trasladamos a la Plaza del pueblo en 10 segundos.")
 
-        await interaction.response.send_message("🕒 Moviendo jugadores en 10 segundos...", ephemeral=True)
+        await interaction.response.send_message("🕒 Moviendo jugadores en 10 segundos...", delete_after=5)
         await asyncio.sleep(10)
 
         moved = 0
@@ -68,6 +68,6 @@ class NightDayControlView(View):
                 continue
 
         if interaction.response.is_done():
-            await interaction.followup.send(f"✅ {moved} jugadores han sido movidos.", ephemeral=True)
+            await interaction.followup.send(f"✅ {moved} jugadores han sido movidos.", delete_after=5)
         else:
-            await interaction.response.send_message(f"✅ {moved} jugadores han sido movidos.", ephemeral=True)
+            await interaction.response.send_message(f"✅ {moved} jugadores han sido movidos.", delete_after=5)

@@ -62,6 +62,6 @@ class CategorySelect(discord.ui.Select):
 
         await interaction.response.send_message(
             f"✅ Categoría de **{label}** actualizada a `{category.name}`.",
-            ephemeral=True
+            delete_after=5
         )
 
