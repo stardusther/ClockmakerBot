@@ -1,45 +1,68 @@
 import discord
-
-# Configuración en memoria (podrías mover esto a un archivo JSON si quieres persistencia)
-town_configs = {}
-
-def get_town_config(town_name):
-    return town_configs.setdefault(town_name, {
-        "notifier_channel_id": None,
-        "delete_join_message_on_end": False
-    })
+from utils.config import get_town_config
 
 class ConfigureTownModal(discord.ui.Modal, title="⚙️ Configurar Pueblo"):
-    def __init__(self, town_name):
+    def __init__(self, town_name, guild):
         super().__init__()
         self.town_name = town_name
+        self.guild = guild
 
-        self.notifier_channel = discord.ui.TextInput(
-            label="ID del canal de notificaciones",
-            placeholder="Ej: 123456789012345678",
-            required=True
-        )
-        self.delete_join_message = discord.ui.TextInput(
-            label="¿Borrar mensaje de unirse tras terminar? (sí/no)",
-            placeholder="sí o no",
-            required=True
-        )
+        self.channel_select = NotifierChannelSelect(guild)
+        self.delete_join_toggle = BooleanToggle("¿Borrar mensaje de unirse tras terminar?", "delete_join")
+        self.clear_config_toggle = BooleanToggle("¿Eliminar configuración al terminar?", "clear_config")
 
-        self.add_item(self.notifier_channel)
-        self.add_item(self.delete_join_message)
+        self.add_item(self.channel_select)
+        self.add_item(self.delete_join_toggle)
+        self.add_item(self.clear_config_toggle)
 
     async def on_submit(self, interaction: discord.Interaction):
         config = get_town_config(self.town_name)
 
-        # Guardar canal de notificaciones
-        try:
-            config["notifier_channel_id"] = int(self.notifier_channel.value.strip())
-        except ValueError:
-            await interaction.response.send_message("❌ El ID del canal debe ser un número.", ephemeral=True)
-            return
+        # Canal de notificaciones
+        config["notifier_channel_id"] = int(self.channel_select.values[0])
 
-        # Guardar preferencia de eliminación
-        delete_pref = self.delete_join_message.value.strip().lower()
-        config["delete_join_message_on_end"] = delete_pref in ["sí", "si", "yes", "true"]
+        # Toggles booleanos
+        config["delete_join_message_on_end"] = self.delete_join_toggle.get_value()
+        config["clear_config_on_end"] = self.clear_config_toggle.get_value()
 
-        await interaction.response.send_message(f"✅ Ajustes actualizados para `{self.town_name}`.", ephemeral=True)
+        await interaction.response.send_message("✅ Ajustes actualizados para el pueblo.", ephemeral=True)
+
+
+class NotifierChannelSelect(discord.ui.Select):
+    def __init__(self, guild: discord.Guild):
+        options = [
+            discord.SelectOption(label=ch.name, value=str(ch.id))
+            for ch in guild.text_channels
+            if ch.permissions_for(guild.me).send_messages
+        ]
+
+        super().__init__(
+            placeholder="Selecciona canal de notificaciones",
+            min_values=1,
+            max_values=1,
+            options=options
+        )
+
+
+class BooleanToggle(discord.ui.Select):
+    def __init__(self, label: str, identifier: str):
+        self.identifier = identifier
+        options = [
+            discord.SelectOption(label="✅ Sí", value="true"),
+            discord.SelectOption(label="❌ No", value="false")
+        ]
+
+        super().__init__(
+            placeholder=label,
+            min_values=1,
+            max_values=1,
+            options=options
+        )
+
+        self.selected_value = "false"
+
+    async def callback(self, interaction: discord.Interaction):
+        self.selected_value = self.values[0]
+
+    def get_value(self):
+        return self.selected_value == "true"

@@ -2,10 +2,12 @@
 town_configs = {}
 
 def get_town_config(town_name: str) -> dict:
-    """Devuelve la configuración de un pueblo, creando una por defecto si no existe."""
     return town_configs.setdefault(town_name, {
         "notifier_channel_id": None,
-        "delete_join_message_on_end": False
+        "delete_join_message_on_end": False,
+        "clear_config_on_end": False,
+        "category_day_id": None,
+        "category_night_id": None
     })
 
 def set_town_config(town_name: str, key: str, value):

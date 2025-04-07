@@ -2,6 +2,7 @@ from discord.ext import commands
 import discord
 from views.narrator_panel import NarratorRoomView
 from utils.roles import ensure_role
+from utils.config import get_town_config
 
 # Almacén en memoria (temporal): canal narrador -> pueblo
 narrator_channel_links = {}
@@ -39,6 +40,10 @@ async def create_town(interaction, town_name):
 
     category_day = await guild.create_category(town_name, overwrites=overwrites_day)
     category_night = await guild.create_category(f"{town_name} - Noche", overwrites=overwrites_night)
+
+    config = get_town_config(town_name)
+    config["category_day_id"] = category_day.id
+    config["category_night_id"] = category_night.id
 
     # Canal exclusivo del narrador
     overwrites_narrator = {
