@@ -22,7 +22,11 @@ async def handle_narrator_message(message):
     if not is_narrator_channel(message.channel.name):
         return
 
-    town_name = extract_town_name(message.channel.name)
+    town_name = message.channel.topic
+
+    if not town_name:
+        return  # no podemos continuar sin el nombre original
+
     if has_narrator_role(message.author, town_name):
         await restore_narrator_panel(message.channel, town_name)
 
@@ -32,13 +36,28 @@ def setup(bot):
     async def show_panel(ctx):
         for channel in ctx.guild.text_channels:
             if is_narrator_channel(channel.name) and ctx.author in channel.members:
-                town_name = extract_town_name(channel.name)
+                town_name = channel.topic
+
+                if not town_name:
+                    await ctx.send("❌ No se pudo determinar el nombre del pueblo desde el canal.",
+                                   delete_after=10)
+                    return
+
                 await restore_narrator_panel(channel, town_name)
-                await ctx.send("✅ Panel reenviado a tu sala de narrador.", delete_after=5)
+                # await ctx.send("✅ Panel reenviado a tu sala de narrador.", delete_after=5)
                 return
         await ctx.send("❌ No encontré tu sala de narrador.", delete_after=10)
 
     @bot.event
     async def on_message(message):
+        if message.author.bot:
+            return
+
+        if message.content.strip().lower().startswith("!panel"):
+            # No reaccionar desde aquí, el comando ya lo hace
+            await bot.process_commands(message)
+            return
+
         await handle_narrator_message(message)
-        await bot.process_commands(message)  # Muy importante para que comandos sigan funcionando
+        await bot.process_commands(message)
+

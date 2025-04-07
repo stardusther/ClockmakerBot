@@ -1,5 +1,6 @@
 import discord
 import asyncio
+from utils.members import get_voice_members_with_role
 
 class NightDayControlView(discord.ui.View):
     def __init__(self, town_name):
@@ -9,39 +10,36 @@ class NightDayControlView(discord.ui.View):
     async def move_players(self, interaction: discord.Interaction, to_night: bool):
         guild = interaction.guild
         villager_role = discord.utils.get(guild.roles, name=f"Aldeano {self.town_name}")
-        players = [m for m in guild.members if villager_role in m.roles and m.voice]
+        print('Villager role', villager_role, 'town name', self.town_name)
+        players = get_voice_members_with_role(guild, villager_role)
 
         if not players:
-            await interaction.response.send_message("⚠️ No hay jugadores en canales de voz ahora mismo.", ephemeral=True)
+            await interaction.response.send_message("⚠️ No hay jugadores conectados a voz.",
+                                                    ephemeral=True)
             return
 
-        # Buscar categorías y canales
         if to_night:
             category = discord.utils.get(guild.categories, name=f"{self.town_name} - Noche")
-            cabins = [ch for ch in category.voice_channels if "Cabaña" in ch.name]
-            message = "🌙 El sol ha caído. Llegarás a una cabaña en 10 segundos..."
             target_name = "una cabaña"
+            cabins = [ch for ch in category.voice_channels if "Cabaña" in ch.name]
         else:
             category = discord.utils.get(guild.categories, name=self.town_name)
+            target_name = "la Plaza del pueblo"
             plaza = discord.utils.get(category.voice_channels, name="Plaza del pueblo")
-            if not plaza:
-                await interaction.response.send_message("❌ No se encontró el canal 'Plaza del pueblo'.", ephemeral=True)
-                return
-            message = "☀️ Buenos días dormilones, nos vemos en la plaza del pueblo en 10 segundos..."
-            target_name = "la plaza del pueblo"
 
-        await interaction.response.send_message(message, ephemeral=False)
-
-        # Aviso colectivo en canal 'chat'
+        # Canal de texto 'chat' para publicar el aviso
         chat_channel = discord.utils.get(category.text_channels, name="chat")
-        if chat_channel:
-            await chat_channel.send(
-                f"🔔 {villager_role.mention} Seréis movidos a {target_name} en 10 segundos..."
-            )
-        else:
-            await interaction.followup.send(
-                "⚠️ No se encontró el canal `chat` para avisar a los jugadores.", ephemeral=True)
 
+        if chat_channel:
+            if to_night:
+                await chat_channel.send(
+                    f"🌙 {villager_role.mention} El sol ha caído... Seréis movidos a {target_name} en 10 segundos.")
+            else:
+                await chat_channel.send(
+                    f"☀️ {villager_role.mention} Buenos días. Os trasladamos a {target_name} en 10 segundos.")
+
+        await interaction.response.send_message("🕒 Moviendo jugadores en 10 segundos...",
+                                                ephemeral=True)
         await asyncio.sleep(10)
 
         moved = 0
@@ -51,9 +49,11 @@ class NightDayControlView(discord.ui.View):
                 await player.move_to(destination)
                 moved += 1
             except:
-                pass
+                continue
 
-        await interaction.followup.send(f"✅ {moved} jugadores han sido movidos a {target_name}.", ephemeral=False)
+        await interaction.followup.send(f"✅ {moved} jugadores movidos a {target_name}.",
+                                        ephemeral=True)
+
 
     @discord.ui.button(label="🌙 Noche", style=discord.ButtonStyle.primary)
     async def night_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -88,7 +88,7 @@ class NightDayControlView(discord.ui.View):
             f"🗳️ {villager_role.mention} Ha llegado la hora de votar. Tenéis 10 segundos para terminar vuestra charla..."
         )
 
-        await interaction.response.send_message("🕒 Contando 10 segundos para la votación...", ephemeral=True)
+        #await interaction.response.send_message("🕒 Contando 10 segundos para la votación...", ephemeral=True)
         await asyncio.sleep(10)
 
         # Mover a jugadores a la plaza
@@ -100,5 +100,12 @@ class NightDayControlView(discord.ui.View):
             except:
                 continue
 
-        await interaction.followup.send(f"✅ {moved} jugadores han sido llevados a la Plaza del pueblo para votar.", ephemeral=False)
+        msg = f"✅ {moved} jugadores han sido llevados a la Plaza del pueblo para votar."
+        await interaction.followup.send(msg, ephemeral=False)
+        if not interaction.response.is_done():
+            await interaction.response.send_message("✅ X jugadores han sido movidos...",
+                                                    ephemeral=True)
+        else:
+            await interaction.followup.send(msg, ephemeral=True)
+
 

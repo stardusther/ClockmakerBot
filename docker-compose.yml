@@ -1,0 +1,13 @@
+
+services:
+  clockmaker-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clockmaker-bot
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: python src/bot.py
+    restart: unless-stopped

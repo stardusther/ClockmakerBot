@@ -47,9 +47,10 @@ async def create_town(interaction, town_name):
         bot_member: bot_overwrite
     }
     narrator_channel = await guild.create_text_channel(
-        f"sala-narrador-{town_name.lower()}",
+        f"sala-narrador-{town_name.lower().replace(' ', '-')}",
         overwrites=overwrites_narrator,
-        category=category_day
+        category=category_day,
+        topic=town_name  # 👈 original town name
     )
 
     # Canal de texto público para avisos

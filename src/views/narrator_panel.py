@@ -13,7 +13,7 @@ class NarratorRoomView(discord.ui.View):
             return
 
         # 👇 Importar aquí para evitar el ciclo
-        from views.modals import CreateGameModal
+        from views.create_game_modal import CreateGameModal
         await interaction.response.send_modal(CreateGameModal(self.town_name))
 
     @discord.ui.button(label="🚀 Comenzar Partida", style=discord.ButtonStyle.success)
@@ -31,6 +31,7 @@ class NarratorRoomView(discord.ui.View):
     async def end_game_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         guild = interaction.guild
         villager_role = discord.utils.get(guild.roles, name=f"Aldeano {self.town_name}")
+        
 
         if not villager_role:
             await interaction.response.send_message(
@@ -50,3 +51,15 @@ class NarratorRoomView(discord.ui.View):
         await interaction.response.send_message(
             f"🧹 Partida finalizada. Se ha eliminado el rol de **{count}** jugador(es).",
             ephemeral=True)
+
+    @discord.ui.button(label="⚙️ Ajustes", style=discord.ButtonStyle.secondary)
+    async def config_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not any(role.name == f"Narrador {self.town_name}" for role in interaction.user.roles):
+            await interaction.response.send_message(
+                "❌ Solo un narrador puede modificar los ajustes.", ephemeral=True)
+            return
+
+        # Importa internamente para evitar import circular
+        from views.configure_town_modal import ConfigureTownModal
+        await interaction.response.send_modal(ConfigureTownModal(self.town_name))
+

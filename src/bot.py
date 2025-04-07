@@ -3,6 +3,7 @@ from discord.ext import commands
 from commands.start_panel import setup as setup_start_panel
 import os
 from dotenv import load_dotenv
+from commands.narrator_panel_restoration import setup as setup_narrator_restoration
 
 print(f"🔧 Usando discord.py versión: {discord.__version__}")
 
@@ -25,6 +26,7 @@ async def on_ready():
 
 # Registrar el panel principal
 setup_start_panel(bot)
+setup_narrator_restoration(bot)
 
 # Ejecutar bot
 bot.run(TOKEN)
