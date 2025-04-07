@@ -35,23 +35,42 @@ class LobbyView(discord.ui.View):
             await interaction.response.send_message(
                 "Aún no hay jugadores en la partida.", ephemeral=True
             )
+
+
 class JoinGameView(discord.ui.View):
-    def __init__(self, villager_role):
+    def __init__(self, role: discord.Role, member: discord.Member):
         super().__init__(timeout=None)
-        self.villager_role = villager_role
+        self.add_item(ToggleJoinButton(role, member))
 
-    @discord.ui.button(label="✅ Unirse a la partida", style=discord.ButtonStyle.success)
-    async def toggle_join_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.villager_role in interaction.user.roles:
-            await interaction.user.remove_roles(self.villager_role)
+
+class ToggleJoinButton(discord.ui.Button):
+    def __init__(self, role: discord.Role, member: discord.Member):
+        self.role = role
+        self.member = member
+        has_role = role in member.roles
+
+        label = "🚪 Irse de la partida" if has_role else "🙋 Unirse a la partida"
+        style = discord.ButtonStyle.danger if has_role else discord.ButtonStyle.success
+
+        super().__init__(label=label, style=style)
+
+    async def callback(self, interaction: discord.Interaction):
+        member = interaction.user
+        has_role = self.role in member.roles
+
+        if has_role:
+            await member.remove_roles(self.role)
             await interaction.response.send_message("🚪 Has salido de la partida.", ephemeral=True)
-            button.label = "✅ Unirse a la partida"
-            button.style = discord.ButtonStyle.success
         else:
-            await interaction.user.add_roles(self.villager_role)
+            await member.add_roles(self.role)
             await interaction.response.send_message("✅ Te has unido a la partida.", ephemeral=True)
-            button.label = "🚪 Irse de la partida"
-            button.style = discord.ButtonStyle.secondary
 
-        await interaction.message.edit(view=self)
+        # Actualizar botón después del cambio
+        self.label = "🚪 Irse de la partida" if self.role in member.roles else "🙋 Unirse a la partida"
+        self.style = discord.ButtonStyle.danger if self.role in member.roles else discord.ButtonStyle.success
+
+        # Recrear la vista con el nuevo estado del usuario
+        new_view = JoinGameView(self.role, interaction.user)
+        await interaction.message.edit(view=new_view)
+
 

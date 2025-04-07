@@ -21,40 +21,56 @@ class NightDayControlView(View):
     async def vote_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.move_players(interaction, to_night=False, voting=True)
 
-    async def move_players(self, interaction: discord.Interaction, to_night: bool, voting: bool = False):
+    async def move_players(self, interaction: discord.Interaction, to_night: bool,
+                           voting: bool = False):
         guild = interaction.guild
         config = get_town_config(self.town_name)
 
+        # Debug útil
+        print(f"[DEBUG] move_players called — to_night={to_night}, voting={voting}")
+
+        # Obtener categoría
         category_id = config.get("category_night_id") if to_night else config.get("category_day_id")
         category = guild.get_channel(category_id)
 
         if not isinstance(category, discord.CategoryChannel):
-            await interaction.response.send_message("❌ No se pudo acceder a la categoría correspondiente.", delete_after=5)
+            await interaction.response.send_message(
+                "❌ No se pudo acceder a la categoría correspondiente.", ephemeral=True)
             return
 
+        # Obtener rol de aldeanos
         villager_role = discord.utils.get(guild.roles, name=f"Aldeano {self.town_name}")
         if not villager_role:
-            await interaction.response.send_message("❌ Rol de aldeanos no encontrado.", delete_after=5)
+            await interaction.response.send_message("❌ Rol de aldeanos no encontrado.",
+                                                    ephemeral=True)
             return
 
+        # Obtener jugadores en voz con ese rol
         players = get_voice_members_with_role(guild, villager_role)
         if not players:
-            await interaction.response.send_message("⚠️ No hay jugadores conectados a voz.", delete_after=5)
+            await interaction.response.send_message("⚠️ No hay jugadores conectados a voz.",
+                                                    ephemeral=True)
             return
 
+        # Obtener destinos
         plaza = discord.utils.get(category.voice_channels, name="Plaza del pueblo")
         cabins = [vc for vc in category.voice_channels if "Cabaña" in vc.name]
         chat_channel = discord.utils.get(category.text_channels, name="chat")
 
+        # Mensaje previo en el canal de texto
         if chat_channel:
-            if voting:
-                await chat_channel.send(f"💀 {villager_role.mention} Ha llegado la hora de votar. Tenéis 10 segundos para terminar vuestra charla...")
-            elif to_night:
-                await chat_channel.send(f"🌙 {villager_role.mention} El sol ha caído... Seréis movidos a una cabaña en 10 segundos.")
+            if to_night:
+                await chat_channel.send(
+                    f"🌙 {villager_role.mention} El sol ha caído... Seréis movidos a una cabaña en 10 segundos.")
+            elif voting:
+                await chat_channel.send(
+                    f"💀 {villager_role.mention} Ha llegado la hora de votar. Tenéis 10 segundos para terminar vuestra charla...")
             else:
-                await chat_channel.send(f"☀️ {villager_role.mention} Buenos días. Os trasladamos a la Plaza del pueblo en 10 segundos.")
+                await chat_channel.send(
+                    f"☀️ {villager_role.mention} Buenos días. Os trasladamos a la Plaza del pueblo en 10 segundos.")
 
-        await interaction.response.send_message("🕒 Moviendo jugadores en 10 segundos...", delete_after=5)
+        await interaction.response.send_message("🕒 Moviendo jugadores en 10 segundos...",
+                                                ephemeral=True)
         await asyncio.sleep(10)
 
         moved = 0
@@ -64,10 +80,9 @@ class NightDayControlView(View):
                 await player.move_to(destination)
                 moved += 1
             except Exception as err:
-                print(f'Could not move player {player} due to: ', err)
+                print(f"[ERROR] Could not move player {player} due to: {err}")
                 continue
 
-        if interaction.response.is_done():
-            await interaction.channel.send(f"✅ {moved} jugadores han sido movidos.", delete_after=5)
+        await interaction.channel.send(f"✅ {moved} jugadores han sido movidos.", delete_after=5)
         # else:
         #     await interaction.response.send_message(f"✅ {moved} jugadores han sido movidos.", delete_after=5)

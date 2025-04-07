@@ -31,10 +31,10 @@ class ChannelSelect(discord.ui.Select):
         self.parent_view.selected_channel = channel
 
         villager_role = await ensure_role(guild, f"Aldeano {self.parent_view.town_name}")
-        view = JoinGameView(villager_role)
+        view = JoinGameView(villager_role, member=interaction.user)
 
         await channel.send(
-            f"🎭 ¡Nueva partida de **{self.parent_view.town_name}**!\n"
+            f"🎭 ¡Nueva partida de **{self.parent_view.town_name}**!\n\n"
             f"📅 Fecha: `{self.parent_view.date}`\n"
             f"🕒 Hora: `{self.parent_view.time}`\n\n"
             f"Pulsa el botón para unirte 👇",
