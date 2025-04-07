@@ -1,13 +1,13 @@
 import discord
 from discord.ui import View, button
-from views.modals import CreateTownModal, DeleteTownModal, StartGameModal
+from views.modals import CreateTownModal, DeleteTownModal
 
 class MainMenuView(View):
     def __init__(self):
         super().__init__(timeout=None)
 
     def is_storyteller(self, user: discord.Member):
-        return any(role.name.startswith("Narrador ") for role in user.roles)
+        return any(role.name.startswith("Narrador") for role in user.roles)
 
     async def deny_access(self, interaction: discord.Interaction):
         await interaction.response.send_message(

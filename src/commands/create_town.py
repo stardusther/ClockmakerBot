@@ -80,11 +80,11 @@ async def create_town(interaction, town_name):
     await narrator_channel.send(
         f"📜 Pueblo `{town_name}` creado.\n\n"
         f"🔹 **Roles:**\n"
-        f"  - ✅ `{villager_role.name}`\n"
-        f"  - ✅ `{storyteller_role.name}`\n\n"
+        f"- ✅ `{villager_role.name}`\n"
+        f"- ✅ `{storyteller_role.name}`\n\n"
         f"🔹 **Categorías:**\n"
-        f"  - 🗂️ `{town_name}`\n"
-        f"  - 🌙 `{town_name} - Noche`\n\n"
+        f"- 🗂️ `{town_name}`\n"
+        f"- 🌙 `{town_name} - Noche`\n\n"
         f"🔹 **Sala del narrador:** este canal\n\n"
         f"Usa los botones de abajo para continuar:",
         view=NarratorRoomView(town_name)

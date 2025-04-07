@@ -16,6 +16,11 @@ class ConfigureTownView(discord.ui.View):
         self.add_item(self.config_toggle)
         self.add_item(SaveButton(self))
 
+        self.delete_roles_toggle = BooleanToggle("🧻 ¿Eliminar roles al borrar el pueblo?",
+                                                 "delete_roles")
+        self.add_item(self.delete_roles_toggle)
+
+
 class NotifierChannelSelect(discord.ui.Select):
     def __init__(self, guild: discord.Guild):
         options = [
@@ -70,6 +75,7 @@ class SaveButton(discord.ui.Button):
         config["notifier_channel_id"] = int(self.parent_view.channel_select.value)
         config["delete_join_message_on_end"] = self.parent_view.clear_toggle.get_value()
         config["clear_config_on_end"] = self.parent_view.config_toggle.get_value()
+        config["delete_roles_on_town_delete"] = self.parent_view.delete_roles_toggle.get_value()
 
         await interaction.response.send_message("✅ Ajustes guardados correctamente.", ephemeral=True)
         self.parent_view.stop()

@@ -7,7 +7,8 @@ def get_town_config(town_name: str) -> dict:
         "delete_join_message_on_end": False,
         "clear_config_on_end": False,
         "category_day_id": None,
-        "category_night_id": None
+        "category_night_id": None,
+        "delete_roles_on_town_delete": True
     })
 
 def set_town_config(town_name: str, key: str, value):
