@@ -37,40 +37,88 @@ class LobbyView(discord.ui.View):
             )
 
 
+def build_lobby_text(role: discord.Role, town_name: str = "Pueblo", date: str = None,
+                     time: str = None, mention: discord.Role = None) -> str:
+    members = [member.display_name for member in role.members if not member.bot]
+
+    if not members:
+        player_list = "*Nadie se ha unido todavía.*"
+    else:
+        player_list = "\n".join(f"• {name}" for name in members)
+
+    lines = [
+        f"{mention}\n\n"
+        f"🎭 ¡Nueva partida en **{town_name}!",
+        f"👥 Jugadores apuntados: `{len(members)}`\n\n"
+    ]
+
+    if date:
+        lines.append(f"📅 Fecha: `{date}`")
+    if time:
+        lines.append(f"🕒 Hora: `{time}`")
+
+    lines.append("\n **Participantes:**")
+    lines.append(player_list)
+    lines.append("\nElige una opción 👇")
+
+    return "\n".join(lines)
+
+
 class JoinGameView(discord.ui.View):
-    def __init__(self, role: discord.Role, member: discord.Member):
+    def __init__(self, role: discord.Role):
         super().__init__(timeout=None)
-        self.add_item(ToggleJoinButton(role, member))
-
-
-class ToggleJoinButton(discord.ui.Button):
-    def __init__(self, role: discord.Role, member: discord.Member):
         self.role = role
-        self.member = member
-        has_role = role in member.roles
+        self.message = None  # se seteará más tarde
 
-        label = "🚪 Irse de la partida" if has_role else "🙋 Unirse a la partida"
-        style = discord.ButtonStyle.danger if has_role else discord.ButtonStyle.success
+        self.add_item(JoinButton(role, self))
+        self.add_item(LeaveButton(role, self))
 
-        super().__init__(label=label, style=style)
+
+class JoinButton(discord.ui.Button):
+    def __init__(self, role: discord.Role, parent_view: JoinGameView):
+        super().__init__(label="🙋 Unirse a la partida", style=discord.ButtonStyle.success)
+        self.role = role
+        self.parent_view = parent_view
+
 
     async def callback(self, interaction: discord.Interaction):
         member = interaction.user
-        has_role = self.role in member.roles
 
-        if has_role:
-            await member.remove_roles(self.role)
-            await interaction.response.send_message("🚪 Has salido de la partida.", ephemeral=True)
+        if self.role in member.roles:
+            await interaction.response.send_message("⚠️ Ya estás en la partida.", ephemeral=True)
         else:
             await member.add_roles(self.role)
             await interaction.response.send_message("✅ Te has unido a la partida.", ephemeral=True)
 
-        # Actualizar botón después del cambio
-        self.label = "🚪 Irse de la partida" if self.role in member.roles else "🙋 Unirse a la partida"
-        self.style = discord.ButtonStyle.danger if self.role in member.roles else discord.ButtonStyle.success
+            if self.parent_view.message:
+                await self.parent_view.message.edit(
+                    content=build_lobby_text(self.role),
+                    view=self.parent_view
+                )
 
-        # Recrear la vista con el nuevo estado del usuario
-        new_view = JoinGameView(self.role, interaction.user)
-        await interaction.message.edit(view=new_view)
+
+
+class LeaveButton(discord.ui.Button):
+    def __init__(self, role: discord.Role, parent_view: JoinGameView):
+        super().__init__(label="🚪 Irse de la partida", style=discord.ButtonStyle.danger)
+        self.role = role
+        self.parent_view = parent_view
+
+    async def callback(self, interaction: discord.Interaction):
+        member = interaction.user
+
+        if self.role not in member.roles:
+            await interaction.response.send_message("⚠️ No estás en la partida.", ephemeral=True)
+        else:
+            await member.remove_roles(self.role)
+            await interaction.response.send_message("🚪 Has salido de la partida.", ephemeral=True)
+
+            if self.parent_view.message:
+                await self.parent_view.message.edit(
+                    content=build_lobby_text(self.role),
+                    view=self.parent_view
+                )
+
+
 
 

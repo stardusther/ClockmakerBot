@@ -1,5 +1,5 @@
 import discord
-from views.lobby_view import JoinGameView
+from views.lobby_view import JoinGameView, build_lobby_text
 from utils.roles import ensure_role
 
 class SelectChannelView(discord.ui.View):
@@ -23,6 +23,11 @@ class ChannelSelect(discord.ui.Select):
         channel_id = int(self.values[0])
         guild = interaction.guild
         channel = guild.get_channel(channel_id)
+        town_name = self.parent_view.town_name
+        date = self.parent_view.date
+        time = self.parent_view.time
+        player_role = discord.utils.get(channel.guild.roles, name="Player")
+        mention = player_role.mention if player_role else ""
 
         if not channel:
             await interaction.response.send_message("❌ Canal no encontrado.", ephemeral=True)
@@ -31,15 +36,12 @@ class ChannelSelect(discord.ui.Select):
         self.parent_view.selected_channel = channel
 
         villager_role = await ensure_role(guild, f"Aldeano {self.parent_view.town_name}")
-        view = JoinGameView(villager_role, member=interaction.user)
+        view = JoinGameView(villager_role)
 
-        await channel.send(
-            f"🎭 ¡Nueva partida de **{self.parent_view.town_name}**!\n\n"
-            f"📅 Fecha: `{self.parent_view.date}`\n"
-            f"🕒 Hora: `{self.parent_view.time}`\n\n"
-            f"Pulsa el botón para unirte 👇",
-            view=view
-        )
+        message = await channel.send(content=build_lobby_text(villager_role, town_name, date, time, mention),
+                                     view=view,
+                                     allowed_mentions=discord.AllowedMentions(roles=True))
+        view.message = message
 
         await interaction.response.send_message(f"✅ Partida anunciada en {channel.mention}.", ephemeral=True)
 
