@@ -42,8 +42,6 @@ async def create_town(interaction, town_name):
     category_night = await guild.create_category(f"{town_name} - Noche", overwrites=overwrites_night)
 
     config = get_town_config(town_name)
-    config["category_day_id"] = category_day.id
-    config["category_night_id"] = category_night.id
 
     set_town_config(town_name, "category_day_id", category_day.id)
     set_town_config(town_name, "category_night_id", category_night.id)
@@ -70,7 +68,12 @@ async def create_town(interaction, town_name):
         bot_member: discord.PermissionOverwrite(view_channel=True, send_messages=True)
     }
 
-    await guild.create_text_channel("chat", overwrites=overwrites_chat, category=category_day)
+    default_notification_channel = await guild.create_text_channel(
+        "chat",
+        overwrites=overwrites_chat,
+        category=category_day
+    )
+    set_town_config(town_name, "notifier_channel_id", default_notification_channel.id)
     narrator_channel_links[narrator_channel.id] = town_name
     await guild.create_voice_channel("Plaza del pueblo", category=category_day)
 

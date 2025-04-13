@@ -1,6 +1,6 @@
 import discord
 from utils.messages import send_temp_message
-from utils.config import get_town_config
+from utils.config import get_town_config, clear_town_config
 
 
 async def delete_town(interaction, town_name):
@@ -74,3 +74,4 @@ async def delete_town(interaction, town_name):
                         delay=10
                     )
 
+    clear_town_config(town_name)
