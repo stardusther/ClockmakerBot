@@ -23,6 +23,7 @@ async def create_town(interaction, town_name):
         view_channel=True,
         manage_channels=True,
         send_messages=True,
+        move_members=True,
         connect=True
     )
 

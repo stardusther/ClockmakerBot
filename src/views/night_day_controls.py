@@ -50,6 +50,8 @@ class NightDayControlView(View):
 
         # Obtener rol de aldeanos
         villager_role = discord.utils.get(guild.roles, name=f"Aldeano {self.town_name}")
+        narrator_role = discord.utils.get(guild.roles, name=f"Narrador {self.town_name}")
+
         if not villager_role:
             await send_temp_message(
                 narrator_channel,
@@ -58,9 +60,19 @@ class NightDayControlView(View):
             )
             return
 
+        if not narrator_role:
+            await send_temp_message(
+                narrator_channel,
+                "❌ Rol de narrador no encontrado.",
+                delay=10
+            )
+            return
+
         # Obtener jugadores en voz con ese rol
         players = get_voice_members_with_role(guild, villager_role)
-        if not players:
+        narrators = get_voice_members_with_role(guild, narrator_role)
+
+        if not players and not narrators:
             await interaction.channel.send("⚠️ No hay jugadores conectados a voz.",
                                                     delete_after=5)
             return
@@ -89,12 +101,19 @@ class NightDayControlView(View):
         moved = 0
         for i, player in enumerate(players):
             try:
-                destination = cabins[i % len(cabins)] if to_night else plaza
+                destination = cabins[(i + 1) % len(cabins)] if to_night else plaza
                 await player.move_to(destination)
                 moved += 1
             except Exception as err:
                 print(f"[ERROR] Could not move player {player} due to: {err}")
                 continue
+
+        for narrator in narrators:
+            try:
+                destination = cabins[0] if to_night else plaza
+                await narrator.move_to(destination)
+            except Exception as err:
+                print(f"[ERROR] Could not move narrator {narrator} due to: {err}")
 
         await interaction.channel.send(f"✅ {moved} jugadores han sido movidos.",
                                        delete_after=5)
