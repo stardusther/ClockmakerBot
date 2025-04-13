@@ -11,7 +11,7 @@ class NarratorRoomView(View):
     @discord.ui.button(label="🎮 Crear partida", style=discord.ButtonStyle.success)
     async def create_game(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not any(role.name == f"Narrador {self.town_name}" for role in interaction.user.roles):
-            await interaction.response.send_message("❌ Solo el narrador puede crear partidas.", ephemeral=True)
+            await interaction.channel.send("❌ Solo el narrador puede crear partidas.", delete_after=5)
             return
 
         from views.create_game_modal import CreateGameModal
@@ -20,10 +20,10 @@ class NarratorRoomView(View):
     @discord.ui.button(label="🎬 Comenzar partida", style=discord.ButtonStyle.primary)
     async def start_game(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not any(role.name == f"Narrador {self.town_name}" for role in interaction.user.roles):
-            await interaction.response.send_message("❌ Solo el narrador puede comenzar la partida.", ephemeral=True)
+            await interaction.channel.send("❌ Solo el narrador puede comenzar la partida.", delete_after=5)
             return
 
-        await interaction.response.send_message("🎬 ¡La partida ha comenzado!", ephemeral=True)
+        await interaction.channel.send("🎬 ¡La partida ha comenzado!", delete_after=5)
         await interaction.channel.send("🕹 Panel de control del día y la noche:", view=NightDayControlView(self.town_name))
 
     @discord.ui.button(label="🛑 Terminar partida", style=discord.ButtonStyle.danger)
@@ -34,7 +34,7 @@ class NarratorRoomView(View):
     @discord.ui.button(label="⚙️ Ajustes", style=discord.ButtonStyle.secondary)
     async def config_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not any(role.name == f"Narrador {self.town_name}" for role in interaction.user.roles):
-            await interaction.response.send_message("❌ Solo un narrador puede modificar los ajustes.", ephemeral=True)
+            await interaction.channel.send("❌ Solo un narrador puede modificar los ajustes.", delete_after=5)
             return
 
         await interaction.response.send_message(

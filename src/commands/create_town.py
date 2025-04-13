@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 from views.narrator_panel import NarratorRoomView
 from utils.roles import ensure_role
-from utils.config import get_town_config
+from utils.config import get_town_config, set_town_config
 
 # Almacén en memoria (temporal): canal narrador -> pueblo
 narrator_channel_links = {}
@@ -45,6 +45,11 @@ async def create_town(interaction, town_name):
     config["category_day_id"] = category_day.id
     config["category_night_id"] = category_night.id
 
+    set_town_config(town_name, "category_day_id", category_day.id)
+    set_town_config(town_name, "category_night_id", category_night.id)
+    set_town_config(town_name, "villager_role_id", villager_role.id)
+    set_town_config(town_name, "storyteller_role_id", storyteller_role.id)
+
     overwrites_narrator = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
         storyteller_role: discord.PermissionOverwrite(view_channel=True, send_messages=True),
@@ -69,14 +74,16 @@ async def create_town(interaction, town_name):
     narrator_channel_links[narrator_channel.id] = town_name
     await guild.create_voice_channel("Plaza del pueblo", category=category_day)
 
-    voice_channels = [("Pozo", 2), ("Cementerio", 3), ("Granja", 2), ("Bosque", 2), ("Torre", 3)]
+    voice_channels = [("Tienda del Narrador", 1), ("Pozo de los lamentos", 2),
+                      ("Cementerio encantado", None), ("Callejón en Barcelona", 2),
+                      ("Bosque prohibido", None), ("Torre de la cautiva", 3)]
     for name, limit in voice_channels:
         await guild.create_voice_channel(name, user_limit=limit, category=category_day)
 
     for _ in range(20):
         await guild.create_voice_channel("Cabaña", category=category_night)
 
-    # 🎯 Mensaje principal permanente con espaciado
+    # Mensaje principal
     await narrator_channel.send(
         f"📜 Pueblo `{town_name}` creado.\n\n"
         f"🔹 **Roles:**\n"

@@ -37,37 +37,51 @@ class LobbyView(discord.ui.View):
             )
 
 
-def build_lobby_text(role: discord.Role, town_name: str = "Pueblo", date: str = None,
-                     time: str = None, mention: discord.Role = None) -> str:
+def build_lobby_text(
+    role: discord.Role,
+    town_name: str = "Pueblo",
+    date: str = None,
+    time: str = None,
+    mention: discord.Role = None
+) -> str:
     members = [member.display_name for member in role.members if not member.bot]
+    mention = mention.mention if mention else ""
 
     if not members:
         player_list = "*Nadie se ha unido todavía.*"
     else:
         player_list = "\n".join(f"• {name}" for name in members)
 
-    lines = [
-        f"{mention}\n\n"
-        f"🎭 ¡Nueva partida en **{town_name}!",
-        f"👥 Jugadores apuntados: `{len(members)}`\n\n"
-    ]
+    lines = []
+
+    # Mención del rol si hay
+    if mention:
+        lines.append(mention)
+        lines.append("")  # Espacio
+
+    lines.append(f"🎭 ¡Nueva partida en **{town_name}**!")
+    lines.append(f"👥 Jugadores apuntados: `{len(members)}`")
 
     if date:
         lines.append(f"📅 Fecha: `{date}`")
     if time:
         lines.append(f"🕒 Hora: `{time}`")
 
-    lines.append("\n **Participantes:**")
+    lines.append("")
+    lines.append("**Participantes:**")
     lines.append(player_list)
-    lines.append("\nElige una opción 👇")
+    lines.append("")
+    lines.append("Elige una opción 👇")
 
     return "\n".join(lines)
 
 
+
 class JoinGameView(discord.ui.View):
-    def __init__(self, role: discord.Role):
+    def __init__(self, role: discord.Role, mention_role: discord.Role = None):
         super().__init__(timeout=None)
         self.role = role
+        self.mention_role = mention_role
         self.message = None  # se seteará más tarde
 
         self.add_item(JoinButton(role, self))
@@ -92,7 +106,9 @@ class JoinButton(discord.ui.Button):
 
             if self.parent_view.message:
                 await self.parent_view.message.edit(
-                    content=build_lobby_text(self.role),
+                    content=build_lobby_text(
+                        self.role,
+                        mention=self.parent_view.mention_role if self.parent_view.mention_role else ""),
                     view=self.parent_view
                 )
 
@@ -115,7 +131,9 @@ class LeaveButton(discord.ui.Button):
 
             if self.parent_view.message:
                 await self.parent_view.message.edit(
-                    content=build_lobby_text(self.role),
+                    content=build_lobby_text(
+                        self.role,
+                        mention=self.parent_view.mention_role if self.parent_view.mention_role else ""),
                     view=self.parent_view
                 )
 

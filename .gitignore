@@ -16,3 +16,4 @@ Thumbs.db
 *.code-workspace
 .idea/
 .vscode/
+data/

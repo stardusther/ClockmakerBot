@@ -1,5 +1,5 @@
 import discord
-from utils.config import get_town_config
+from utils.config import get_town_config, save_config
 
 class ConfigureTownView(discord.ui.View):
     def __init__(self, town_name, guild):
@@ -88,16 +88,35 @@ class SaveButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         config = get_town_config(self.parent_view.town_name)
 
-        try:
+        # ✅ Forzar la actualización manual de valores (simula callback)
+        if self.parent_view.channel_select.values:
             selected_channel_id = int(self.parent_view.channel_select.values[0])
-        except (IndexError, TypeError, ValueError):
-            await interaction.response.send_message("❌ Debes seleccionar un canal de notificaciones.", delete_after=10)
-            return
+        else:
+            selected_channel_id = config.get("notifier_channel_id")
+
+        # Forzar actualización de los toggles si no se ha activado su callback
+        clear_toggle_value = self.parent_view.clear_toggle.values[
+            0] if self.parent_view.clear_toggle.values else "true" if \
+        self.parent_view.clear_toggle.options[0].default else "false"
+        config_toggle_value = self.parent_view.config_toggle.values[
+            0] if self.parent_view.config_toggle.values else "true" if \
+        self.parent_view.config_toggle.options[0].default else "false"
+        delete_roles_value = self.parent_view.delete_roles_toggle.values[
+            0] if self.parent_view.delete_roles_toggle.values else "true" if \
+        self.parent_view.delete_roles_toggle.options[0].default else "false"
 
         config["notifier_channel_id"] = selected_channel_id
-        config["delete_join_message_on_end"] = self.parent_view.clear_toggle.get_value()
-        config["clear_config_on_end"] = self.parent_view.config_toggle.get_value()
-        config["delete_roles_on_town_delete"] = self.parent_view.delete_roles_toggle.get_value()
+        config["delete_join_message_on_end"] = clear_toggle_value == "true"
+        config["clear_config_on_end"] = config_toggle_value == "true"
+        config["delete_roles_on_town_delete"] = delete_roles_value == "true"
 
-        await interaction.response.send_message("✅ Ajustes guardados correctamente.", delete_after=10)
+        save_config()
+
+        if interaction.response.is_done():
+            await interaction.followup.send("✅ Ajustes guardados correctamente.", ephemeral=True)
+        else:
+            await interaction.response.send_message("✅ Ajustes guardados correctamente.",
+                                                    ephemeral=True)
+
         self.parent_view.stop()
+

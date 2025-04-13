@@ -15,8 +15,8 @@ async def end_game(interaction: discord.Interaction, town_name: str):
         to_remove = []
         if villager_role and villager_role in member.roles:
             to_remove.append(villager_role)
-        if narrator_role and narrator_role in member.roles:
-            to_remove.append(narrator_role)
+        # if narrator_role and narrator_role in member.roles:
+        #     to_remove.append(narrator_role)
         if to_remove:
             await member.remove_roles(*to_remove)
             removed += 1
